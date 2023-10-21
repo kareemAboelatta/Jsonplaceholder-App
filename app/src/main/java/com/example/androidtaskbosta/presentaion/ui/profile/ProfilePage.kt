@@ -19,16 +19,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.androidtaskbosta.domain.models.Album
 import com.example.androidtaskbosta.domain.models.User
 import com.example.androidtaskbosta.presentaion.Screen
-import com.example.androidtaskbosta.presentaion.theme.AndroidTaskBostaTheme
 import com.example.common.ui.utils.PaddingDimensions
 import com.example.common.utils.CustomError
 import com.example.common.utils.UIState

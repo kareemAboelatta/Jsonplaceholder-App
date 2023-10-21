@@ -30,7 +30,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.androidtaskbosta.R
@@ -89,7 +88,6 @@ fun ImageGalleryViewer(
                 .padding(16.dp)
         )
 
-        // Top app bar with back and share icons
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -177,14 +175,14 @@ fun ProgressIndicators(total: Int, current: Int, modifier: Modifier = Modifier) 
         modifier = modifier
     ) {
         repeat(total) { index ->
-            Spacer(modifier = Modifier.width(4.dp)) // Space between indicators
+            Spacer(modifier = Modifier.width(4.dp))
             Box(
                 modifier = Modifier
                     .size(8.dp)
                     .clip(CircleShape)
                     .background(
-                        if (index == current) Color.White // Current page's indicator
-                        else Color.Gray     // Other pages' indicators
+                        if (index == current) Color.White
+                        else Color.Gray
                     )
             )
         }

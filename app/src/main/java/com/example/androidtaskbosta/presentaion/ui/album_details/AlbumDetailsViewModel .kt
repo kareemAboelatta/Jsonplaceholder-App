@@ -51,7 +51,6 @@ class AlbumDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             _albumPhotosState.value = UIState.Loading
             runCatching {
-                delay(1000L) // Simulate network delay
                 fetchPhotosByAlbumIdUseCase.execute(albumId)
             }.onSuccess { photos ->
                 _albumPhotosState.value = if (photos.isEmpty()) {
@@ -64,7 +63,6 @@ class AlbumDetailsViewModel @Inject constructor(
             }
         }
     }
-
 
     fun updateSearchQuery(text: String) {
         _searchText.value = text

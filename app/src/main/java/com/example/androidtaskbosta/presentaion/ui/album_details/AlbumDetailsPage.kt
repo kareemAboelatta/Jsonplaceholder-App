@@ -1,7 +1,6 @@
 package com.example.androidtaskbosta.presentaion.ui.album_details
 
-import android.util.Log
-import androidx.compose.foundation.Image
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,15 +29,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-
 import com.example.androidtaskbosta.domain.models.Photo
 import com.example.androidtaskbosta.presentaion.Screen
-import com.example.androidtaskbosta.presentaion.theme.AndroidTaskBostaTheme
 import com.example.androidtaskbosta.presentaion.ui.profile.CentralizedErrorView
 import com.example.androidtaskbosta.presentaion.ui.profile.CentralizedProgressIndicator
 import com.example.androidtaskbosta.presentaion.ui.profile.CentralizedTextView
@@ -69,9 +64,13 @@ fun AlbumDetailsScreen(
             viewModel.updateSearchQuery(newQuery)
         }
         Spacer(modifier = Modifier.height(16.dp))
-        AlbumThumbnailGrid(navController= navController ,filteredPhotos = filteredPhotos, state = albumPhotosState , onRetry = {
-            viewModel.fetchAlbumDetails(albumId)
-        })
+        AlbumThumbnailGrid(
+            navController = navController,
+            filteredPhotos = filteredPhotos,
+            state = albumPhotosState,
+            onRetry = {
+                viewModel.fetchAlbumDetails(albumId)
+            })
     }
 }
 
@@ -80,13 +79,15 @@ fun AlbumThumbnailGrid(
     navController: NavHostController,
     state: UIState<List<Photo>>,
     filteredPhotos: List<Photo>,
-    onRetry: () -> Unit = {}) {
+    onRetry: () -> Unit = {}
+) {
     when (state) {
         is UIState.Loading -> CentralizedProgressIndicator()
         is UIState.Error -> CentralizedErrorView(
             error = state.error,
             onRetry = onRetry
         )
+
         is UIState.Success -> {
             if (filteredPhotos.isEmpty()) {
                 CentralizedTextView(text = "No photos available!")
@@ -115,6 +116,7 @@ fun AlbumThumbnailGrid(
                 }
             }
         }
+
         UIState.Empty -> CentralizedTextView(text = "No photos available!")
     }
 }

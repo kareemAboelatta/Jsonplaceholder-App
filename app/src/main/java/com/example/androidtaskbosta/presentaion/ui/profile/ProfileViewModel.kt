@@ -1,8 +1,6 @@
 package com.example.androidtaskbosta.presentaion.ui.profile
 
-import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,7 +32,6 @@ class ProfileViewModel @Inject constructor(
         fetchUsers()
     }
 
-    // Fetch Users
     fun fetchUsers() {
         _userState.value = UIState.Loading
         viewModelScope.launch {
@@ -53,7 +50,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // Fetch Albums by User ID
     fun fetchAlbums(userId: Int) {
         _albumState.value = UIState.Loading
         viewModelScope.launch {

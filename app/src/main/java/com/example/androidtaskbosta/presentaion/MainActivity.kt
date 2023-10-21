@@ -30,12 +30,9 @@ class MainActivity : ComponentActivity() {
 
 
                 NavHost(navController = navController, startDestination = Screen.Profile.route) {
-
-
                     composable(Screen.Profile.route) {
                         ProfileScreen(navController = navController, viewModel = hiltViewModel())
                     }
-
                     composable(
                         "albumDetails/{albumId}",
                         arguments = listOf(navArgument("albumId") { type = NavType.IntType })

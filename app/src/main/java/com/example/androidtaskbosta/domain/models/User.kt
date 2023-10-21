@@ -1,6 +1,5 @@
 package com.example.androidtaskbosta.domain.models
 
-// For User
 data class User(
     val id: Int,
     val name: String,
