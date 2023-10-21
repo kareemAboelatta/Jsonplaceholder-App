@@ -15,7 +15,6 @@ import com.example.androidtaskbosta.presentaion.ui.album_details.AlbumDetailsVie
 import com.example.androidtaskbosta.presentaion.ui.image_viewer.ImageViewPage
 import com.example.androidtaskbosta.presentaion.ui.profile.ProfileScreen
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -26,28 +25,39 @@ class MainActivity : ComponentActivity() {
         setContent {
             AndroidTaskBostaTheme {
                 val navController = rememberNavController()
-
                 val albumDetailsViewModel: AlbumDetailsViewModel = hiltViewModel()
 
-                NavHost(navController = navController, startDestination = Screen.Profile.route) {
-                    composable(Screen.Profile.route) {
-                        ProfileScreen(navController = navController , viewModel = hiltViewModel())
-                    }
 
+
+                NavHost(navController = navController, startDestination = Screen.Profile.route) {
+
+
+                    composable(Screen.Profile.route) {
+                        ProfileScreen(navController = navController, viewModel = hiltViewModel())
+                    }
 
                     composable(
                         "albumDetails/{albumId}",
                         arguments = listOf(navArgument("albumId") { type = NavType.IntType })
                     ) { backStackEntry ->
                         backStackEntry.arguments?.getInt("albumId")?.let {
-                            AlbumDetailsScreen(navController = navController , albumId = it, viewModel = albumDetailsViewModel)
+                            AlbumDetailsScreen(
+                                navController = navController,
+                                albumId = it,
+                                viewModel = albumDetailsViewModel
+                            )
                         }
-
                     }
+
                     composable(
-                        "imageView/{initialIndex}") { backStackEntry -> // Use a default value or adjust as needed
+                        "imageView/{initialIndex}"
+                    ) { backStackEntry ->
                         val initialIndex = backStackEntry.arguments?.getInt("initialIndex") ?: 0
-                        ImageViewPage(  viewModel = albumDetailsViewModel, initialIndex = initialIndex)
+                        ImageViewPage(
+                            navController = navController,
+                            viewModel = albumDetailsViewModel,
+                            initialIndex = initialIndex
+                        )
                     }
                 }
 
@@ -57,18 +67,17 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
-
 sealed class Screen(val route: String) {
     object Profile : Screen("profile")
 
-    data class AlbumDetails(val albumId: Int) : Screen("albumDetails/{albumId}") {
+    class AlbumDetails(val albumId: Int) : Screen("albumDetails/{albumId}") {
         companion object {
             fun route(albumId: Int) = "albumDetails/$albumId"
         }
     }
 
-    data class ImageView(val imageUrls: List<String>, val initialIndex: Int) : Screen("imageView/{initialIndex}") {
+    data class ImageView(val imageUrls: List<String>, val initialIndex: Int) :
+        Screen("imageView/{initialIndex}") {
         companion object {
             fun route(initialIndex: Int) = "imageView/$initialIndex"
         }

@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.androidtaskbosta.R
 import com.example.androidtaskbosta.presentaion.ui.album_details.AlbumDetailsViewModel
@@ -40,13 +41,15 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ImageViewPage(
-    viewModel:  AlbumDetailsViewModel ,
+    navController: NavHostController,
+    viewModel:  AlbumDetailsViewModel,
     initialIndex: Int = 0
 ) {
     val imageUrls = viewModel.filteredPhotos.collectAsState().value.map { it.url }
     ImageGalleryViewer(
         imageUrls = imageUrls,
-        initialIndex = initialIndex
+        initialIndex = initialIndex,
+        navController = navController
     )
 }
 
@@ -54,8 +57,11 @@ fun ImageViewPage(
 @Composable
 fun ImageGalleryViewer(
     imageUrls: List<String>,
-    initialIndex: Int = 0
-) {
+    initialIndex: Int = 0,
+    navController: NavHostController,
+
+
+    ) {
     val pagerState = rememberPagerState(
         pageCount = { imageUrls.size }, initialPage = initialIndex,
     )
@@ -98,6 +104,8 @@ fun ImageGalleryViewer(
                     .size(24.dp)
                     .clickable {
                         //back
+                        navController.popBackStack()
+
                     },
                 tint = Color.White
             )
