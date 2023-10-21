@@ -3,11 +3,17 @@ package com.example.androidtaskbosta.presentaion
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.example.androidtaskbosta.domain.repository.DataRepository
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.androidtaskbosta.presentaion.theme.AndroidTaskBostaTheme
-import com.example.androidtaskbosta.presentaion.ui.album_details.AlbumDetailsPagePreview
 import com.example.androidtaskbosta.presentaion.ui.album_details.AlbumDetailsScreen
-import com.example.androidtaskbosta.presentaion.ui.image_viewer.ImageGalleryViewer
+import com.example.androidtaskbosta.presentaion.ui.album_details.AlbumDetailsViewModel
+import com.example.androidtaskbosta.presentaion.ui.image_viewer.ImageViewPage
+import com.example.androidtaskbosta.presentaion.ui.profile.ProfileScreen
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -15,26 +21,61 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
         setContent {
             AndroidTaskBostaTheme {
-                ImageGalleryViewer(
-                    imageUrls = listOf(
-                        "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&q=80",
-                        "https://media.istockphoto.com/id/1146517111/photo/taj-mahal-mausoleum-in-agra.jpg?s=612x612&w=0&k=20&c=vcIjhwUrNyjoKbGbAQ5sOcEzDUgOfCsm9ySmJ8gNeRk=",
-                        "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&q=80",
-                        "https://thatshelf.com/wp-content/uploads/2019/06/Spider-Man-Far-From-Home-Featured.jpg",
-                        "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80",
-                        "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&q=80",
-                    ),
-                )
+                val navController = rememberNavController()
+
+                val albumDetailsViewModel: AlbumDetailsViewModel = hiltViewModel()
+
+                NavHost(navController = navController, startDestination = Screen.Profile.route) {
+                    composable(Screen.Profile.route) {
+                        ProfileScreen(navController = navController , viewModel = hiltViewModel())
+                    }
+
+
+                    composable(
+                        "albumDetails/{albumId}",
+                        arguments = listOf(navArgument("albumId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        backStackEntry.arguments?.getInt("albumId")?.let {
+                            AlbumDetailsScreen(navController = navController , albumId = it, viewModel = albumDetailsViewModel)
+                        }
+
+                    }
+                    composable(
+                        "imageView/{initialIndex}") { backStackEntry -> // Use a default value or adjust as needed
+                        val initialIndex = backStackEntry.arguments?.getInt("initialIndex") ?: 0
+                        ImageViewPage(  viewModel = albumDetailsViewModel, initialIndex = initialIndex)
+                    }
+                }
+
             }
         }
     }
 }
+
+
+
+
+sealed class Screen(val route: String) {
+    object Profile : Screen("profile")
+
+    data class AlbumDetails(val albumId: Int) : Screen("albumDetails/{albumId}") {
+        companion object {
+            fun route(albumId: Int) = "albumDetails/$albumId"
+        }
+    }
+
+    data class ImageView(val imageUrls: List<String>, val initialIndex: Int) : Screen("imageView/{initialIndex}") {
+        companion object {
+            fun route(initialIndex: Int) = "imageView/$initialIndex"
+        }
+    }
+}
+
+
+
+
 

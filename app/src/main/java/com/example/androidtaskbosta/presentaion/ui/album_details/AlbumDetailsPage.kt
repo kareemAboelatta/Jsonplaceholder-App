@@ -1,7 +1,9 @@
 package com.example.androidtaskbosta.presentaion.ui.album_details
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -31,8 +34,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberImagePainter
+import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+
 import com.example.androidtaskbosta.domain.models.Photo
+import com.example.androidtaskbosta.presentaion.Screen
 import com.example.androidtaskbosta.presentaion.theme.AndroidTaskBostaTheme
 import com.example.androidtaskbosta.presentaion.ui.profile.CentralizedErrorView
 import com.example.androidtaskbosta.presentaion.ui.profile.CentralizedProgressIndicator
@@ -40,16 +46,12 @@ import com.example.androidtaskbosta.presentaion.ui.profile.CentralizedTextView
 import com.example.common.utils.UIState
 
 
-@Preview
 @Composable
-fun AlbumDetailsPagePreview() {
-    AndroidTaskBostaTheme {
-        AlbumDetailsScreen(1)
-    }
-}
-
-@Composable
-fun AlbumDetailsScreen(albumId: Int, viewModel: AlbumDetailsViewModel = hiltViewModel()) {
+fun AlbumDetailsScreen(
+    navController: NavHostController,
+    albumId: Int,
+    viewModel: AlbumDetailsViewModel = hiltViewModel()
+) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val filteredPhotos by viewModel.filteredPhotos.collectAsState()
     val albumPhotosState by viewModel.albumPhotosState.collectAsState()
@@ -67,14 +69,18 @@ fun AlbumDetailsScreen(albumId: Int, viewModel: AlbumDetailsViewModel = hiltView
             viewModel.updateSearchQuery(newQuery)
         }
         Spacer(modifier = Modifier.height(16.dp))
-        AlbumThumbnailGrid(filteredPhotos = filteredPhotos, state = albumPhotosState , onRetry = {
+        AlbumThumbnailGrid(navController= navController ,filteredPhotos = filteredPhotos, state = albumPhotosState , onRetry = {
             viewModel.fetchAlbumDetails(albumId)
         })
     }
 }
 
 @Composable
-fun AlbumThumbnailGrid(state: UIState<List<Photo>>, filteredPhotos: List<Photo>, onRetry: () -> Unit = {}) {
+fun AlbumThumbnailGrid(
+    navController: NavHostController,
+    state: UIState<List<Photo>>,
+    filteredPhotos: List<Photo>,
+    onRetry: () -> Unit = {}) {
     when (state) {
         is UIState.Loading -> CentralizedProgressIndicator()
         is UIState.Error -> CentralizedErrorView(
@@ -89,14 +95,17 @@ fun AlbumThumbnailGrid(state: UIState<List<Photo>>, filteredPhotos: List<Photo>,
                     columns = GridCells.Fixed(3),
                     contentPadding = PaddingValues(4.dp)
                 ) {
-                    items(filteredPhotos) { photo ->
+                    itemsIndexed(filteredPhotos) { index, photo ->
                         Box(
                             modifier = Modifier
+                                .clickable {
+                                    navController.navigate(Screen.ImageView.route(initialIndex = index))
+                                }
                                 .padding(4.dp)
                                 .aspectRatio(1f)
                         ) {
-                            Image(
-                                painter = rememberImagePainter(photo.url),
+                            AsyncImage(
+                                photo.url,
                                 contentDescription = "Album Thumbnail",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
@@ -106,7 +115,6 @@ fun AlbumThumbnailGrid(state: UIState<List<Photo>>, filteredPhotos: List<Photo>,
                 }
             }
         }
-
         UIState.Empty -> CentralizedTextView(text = "No photos available!")
     }
 }

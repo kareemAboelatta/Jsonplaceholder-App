@@ -4,13 +4,13 @@ package com.example.androidtaskbosta.presentaion.ui.image_viewer
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -21,15 +21,34 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import coil.compose.AsyncImage
+import com.example.androidtaskbosta.R
+import com.example.androidtaskbosta.presentaion.ui.album_details.AlbumDetailsViewModel
+import com.example.common.ui.utils.PaddingDimensions
 import kotlinx.coroutines.launch
+
+
+@Composable
+fun ImageViewPage(
+    viewModel:  AlbumDetailsViewModel ,
+    initialIndex: Int = 0
+) {
+    val imageUrls = viewModel.filteredPhotos.collectAsState().value.map { it.url }
+    ImageGalleryViewer(
+        imageUrls = imageUrls,
+        initialIndex = initialIndex
+    )
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -54,72 +73,14 @@ fun ImageGalleryViewer(
         ) { page ->
             ImageViewer(
                 imageUrl = imageUrls[page],
-                onBack = { /* Handle back navigation, if needed */ },
-                onShare = { shareImageUrl(context, imageUrls[page]) }
             )
         }
-
-        // Display arrows only if necessary
-        if (pagerState.currentPage > 0) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Previous Image",
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .size(48.dp)
-                    .clickable {
-                        scope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                        }
-                    }
-                    .padding(16.dp),
-                tint = Color.White
-            )
-        }
-
-        if (pagerState.currentPage < imageUrls.size - 1) {
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Next Image",
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(48.dp)
-                    .clickable {
-                        scope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                        }
-                    }
-                    .padding(16.dp),
-                tint = Color.White
-            )
-        }
-    }
-}
-
-@Composable
-fun ImageViewer(
-    imageUrl: String,
-    onBack: () -> Unit,
-    onShare: () -> Unit
-) {
-    var scale by remember { mutableFloatStateOf(1f) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pinchToZoomGestureFilter { scale *= it }
-            .background(Color.Black)
-    ) {
-        AsyncImage(
-            imageUrl,
-            contentDescription = null,
+        ProgressIndicators(
+            total = imageUrls.size,
+            current = pagerState.currentPage,
             modifier = Modifier
-                .graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale
-                )
-                .fillMaxSize(),
-            contentScale = ContentScale.Fit
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
         )
 
         // Top app bar with back and share icons
@@ -135,7 +96,9 @@ fun ImageViewer(
                 contentDescription = "Back",
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable { onBack() },
+                    .clickable {
+                        //back
+                    },
                 tint = Color.White
             )
             Icon(
@@ -143,10 +106,110 @@ fun ImageViewer(
                 contentDescription = "Share",
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable { onShare() },
+                    .clickable {
+                        shareImageUrl(context, imageUrl = imageUrls[pagerState.currentPage])
+                    },
                 tint = Color.White
             )
         }
+
+
+        // Display arrows only if necessary
+        if (pagerState.currentPage > 0) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Previous Image",
+                modifier = Modifier
+                    .padding(PaddingDimensions.small)
+                    .background(
+                        color = Color.White.copy(alpha = 0.4f),
+                        shape = CircleShape
+                    )
+                    .align(Alignment.CenterStart)
+                    .size(48.dp)
+                    .clickable {
+                        scope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    }
+                    .padding(PaddingDimensions.small),
+                tint = Color.White
+            )
+        }
+
+        if (pagerState.currentPage < imageUrls.size - 1) {
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = "Next Image",
+                modifier = Modifier
+                    .padding(PaddingDimensions.small)
+                    .background(
+                        color = Color.White.copy(alpha = 0.4f),
+                        shape = CircleShape
+                    )
+                    .align(Alignment.CenterEnd)
+                    .size(48.dp)
+                    .clickable {
+                        scope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    }
+                    .padding(PaddingDimensions.small),
+                tint = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun ProgressIndicators(total: Int, current: Int, modifier: Modifier = Modifier) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        repeat(total) { index ->
+            Spacer(modifier = Modifier.width(4.dp)) // Space between indicators
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (index == current) Color.White // Current page's indicator
+                        else Color.Gray     // Other pages' indicators
+                    )
+            )
+        }
+    }
+}
+
+
+@Composable
+fun ImageViewer(
+    imageUrl: String,
+) {
+    var scale by remember { mutableFloatStateOf(1f) }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pinchToZoomGestureFilter { scale *= it }
+            .background(Color.Black)
+    ) {
+        AsyncImage(
+            imageUrl,
+            contentDescription = null,
+            error = painterResource(R.drawable.ic_broken_image),
+
+            modifier = Modifier
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale
+                )
+                .fillMaxSize(),
+            contentScale = ContentScale.Fit
+        )
+
+
     }
 }
 

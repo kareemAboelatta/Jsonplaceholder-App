@@ -1,5 +1,6 @@
 package com.example.androidtaskbosta.presentaion.ui.profile
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,8 +23,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.androidtaskbosta.domain.models.Album
 import com.example.androidtaskbosta.domain.models.User
+import com.example.androidtaskbosta.presentaion.Screen
 import com.example.androidtaskbosta.presentaion.theme.AndroidTaskBostaTheme
 import com.example.common.ui.utils.PaddingDimensions
 import com.example.common.utils.CustomError
@@ -31,17 +35,9 @@ import com.example.common.utils.UIState
 import com.example.common.utils.getDisplayMessage
 
 
-@Preview
-@Composable
-fun ProfilePagePreview() {
-    AndroidTaskBostaTheme {
-        ProfileScreen()
-    }
-}
-
-
 @Composable
 fun ProfileScreen(
+    navController: NavHostController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val userState = viewModel.userState.value
@@ -52,9 +48,9 @@ fun ProfileScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        ProfileDetailsSection(userState =  userState, onRetry = viewModel::fetchUsers)
+        ProfileDetailsSection(userState = userState, onRetry = viewModel::fetchUsers)
         Spacer(modifier = Modifier.height(16.dp))
-        AlbumListSection(albumState)
+        AlbumListSection(albumState = albumState, navController = navController)
     }
 }
 
@@ -63,7 +59,7 @@ fun ProfileDetailsSection(
     userState: UIState<User>,
     onRetry: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
-    ) {
+) {
     when (userState) {
         is UIState.Success -> {
             val user = userState.data
@@ -82,13 +78,22 @@ fun ProfileDetailsSection(
 }
 
 @Composable
-fun AlbumListSection(albumState: UIState<List<Album>>) {
+fun AlbumListSection(
+    navController: NavHostController,
+    albumState: UIState<List<Album>>
+) {
+
     when (albumState) {
         is UIState.Success -> {
             val albums = albumState.data
             LazyColumn {
                 items(albums) { album ->
-                    AlbumItem(album = album)
+                    AlbumItem(
+                        modifier = Modifier.clickable {
+                            navController.navigate(Screen.AlbumDetails.route(album.id))
+                        },
+                        album = album
+                    )
                 }
             }
         }
